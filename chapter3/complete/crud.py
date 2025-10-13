@@ -22,7 +22,6 @@ def get_players(db: Session, skip: int = 0, limit: int = 100,
         query = query.filter(models.Player.last_name == last_name)
     return query.offset(skip).limit(limit).all()
 
-
 def get_performances(db: Session, skip: int = 0, limit: int = 100, 
                      min_last_changed_date: date = None):
     query = db.query(models.Performance)
