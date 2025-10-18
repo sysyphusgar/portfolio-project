@@ -8,6 +8,7 @@ from database import SessionLocal
 
 app = FastAPI()
 
+
 # Dependency
 def get_db():
     db = SessionLocal()
