@@ -17,7 +17,7 @@ Thanks for using the Sports World Central API. This is your one-stop-shop for ac
 
 ## Public API
 
-Our API is hosted at [API URL]/([API URL]/). 
+Our API is hosted at https://portfolio-project-1-lztt.onrender.com 
 
 You can access the interactive documentation at [[API URL]/docs]([API URL]/docs).
 
