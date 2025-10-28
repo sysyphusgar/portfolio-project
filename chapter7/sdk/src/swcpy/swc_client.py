@@ -70,3 +70,85 @@ class SWCClient:
             }
         
         logger.debug(f"Bulk file dictionary: {self.BULK_FILE_NAMES}")
+        
+    def call_api(self,
+            api_endpoint: str,
+            api_params: dict = None 
+        ) -> httpx.Response:
+        """Makes API call and logs errors."""
+        
+        if api_params:
+            api_params = {key: val for key, val in api_params.items() if val
+            is not None}
+            
+        try:
+            with httpx.Client(base_url=self.swc_base_url) as client:
+                logger.debug(f"base_url: {self.swc_base_url}, api_endpoint: \
+                    {api_endpoint}, api_params: {api_params}")
+                response = client.get(api_endpoint, params=api_params)
+                logger.debug(f"Response JSON: {response.json()}")
+                return response
+        except httpx.RequestError as e:
+            logger.error(
+                f"HTTP status error occurred: {e.response.status_code} \
+                {e.response.text}"
+            )
+            raise
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Request error occurred: {str(e)}")
+            raise
+        
+    def get_health_check(self) -> httpx.Response:
+        """Checks if API is running and healthy.
+        
+        Calls the API health check endpoint and returns a standard
+        message if the API is running normally. Can be used to check
+        status of API before making more complicated API calls.
+        
+        Returns:
+            An httpx.Response object that contains the HTTP status,
+            JSON response and other information received from the API.
+        """
+        logger.debug("Entered health check")
+        endpoint_url = self.HEALTH_CHECK_ENDPOINT
+        return self.call_api(endpoint_url)
+        
+    def list_leagues(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        minimum_last_changed_date: str = None,
+        league_name: str = None,
+    ) -> List[League]:
+        """Returns a List of Leagues filtered by parameters.
+        
+        Calls the API v0/leagues endpoint and returns a list of
+        League objects.
+        Returns:
+        A List of schemas.League objects. Each represents one
+        SportsWorldCentral fantasy league.
+        
+        """
+        logger.debug("Entered list leagues")
+        
+        params = {
+            "skip": skip,
+            "limit": limit,
+            "min_last_changed_date": minimum_last_changed_date,
+            "league_name": league_name,
+        }
+        response = self.call_api(self.LIST_LEAGUES_ENDPOINT, params)
+        return [League(**league_data) for league_data in response.json()]
+       
+    def get_bulk_player_file(self) -> bytes:
+        """Returns a bulk file with player data"""
+        
+        logger.debug("Entered get bulk player file")
+
+        player_file_path = self.BULK_FILE_BASE_URL + self.BULK_FILE_NAMES["players"]
+
+        response = httpx.get(player_file_path, follow_redirects=True)
+
+        if response.status_code == 200:
+            logger.debu("File downloaded successfully")
+            return response.content
