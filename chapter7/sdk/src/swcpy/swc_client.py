@@ -83,7 +83,7 @@ class SWCClient:
                 api_params = {key: val for key, val in api_params.items() if val is not None}
 
             try:
-                with httpx.Client(base_url=self.swc_base_url) as client: 
+                with httpx.Client(base_url=self.swc_base_url, timeout=60.0) as client: 
                     logger.debug(f"base_url: {self.swc_base_url}, api_endpoint: {api_endpoint}, api_params: {api_params}")
                     response = client.get(api_endpoint, params=api_params)
                     logger.debug(f"Response JSON: {response.json()}")
